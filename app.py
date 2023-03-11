@@ -172,16 +172,6 @@ def postRoute():
     return successResponse
 
 
-def get_stream(url):
-    session = requests.Session()
-    resp = session.get(url, stream=True)
-
-    for line in resp.iter_content(chunk_size=1280):
-        if line:
-            decoded_line = line.decode('utf-8')
-            print(json.loads(decoded_line))
-
-
 # check if this file is being excuted from itself or being excuted by being imported as a module
 if __name__ == "__main__":
     from waitress import serve
