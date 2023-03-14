@@ -1,22 +1,21 @@
+import numpy as np
+# import threading
+from dotenv import load_dotenv
+from flask_mail import Mail, Message
+import requests
+import json
+from urllib.request import urlopen
+from PIL import Image
+from werkzeug.utils import secure_filename
+from flask import Flask, jsonify, request
+from torchvision import transforms
 import torchvision.models as models
 import torch.nn as nn
 import torch
-import numpy as np
-from torchvision import transforms
-from flask import Flask, jsonify, request
-from werkzeug.utils import secure_filename
 import os
-from PIL import Image
-from urllib.request import urlopen
-import json
-import requests
+os.environ['OPENBLAS_NUM_THREADS'] = '1'
 # %matplotlib inline
-import requests
-import json
-from flask_mail import Mail, Message
-from dotenv import load_dotenv
-import os
-import threading
+
 
 global embed
 
@@ -79,7 +78,7 @@ def postRoute():
             {"errorMessage": "Invalid File Type"})
 
     # run the below code after the Response is sent to user
-    # @successResponse.call_on_close
+    @successResponse.call_on_close
     def on_close():
         # If the user does not select a file, the browser submits an empty file without a filename.
         if image.filename == '':
@@ -166,8 +165,8 @@ def postRoute():
                 with app.app_context():
                     mail.send(msg)
 
-    thread = threading.Thread(target=on_close)
-    thread.start()
+    # thread = threading.Thread(target=on_close)
+    # thread.start()
     return successResponse
 
 
