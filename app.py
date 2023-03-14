@@ -9,13 +9,11 @@ import os
 from PIL import Image
 from urllib.request import urlopen
 import json
-from math import sqrt
 import requests
 # %matplotlib inline
 import requests
 import json
 from flask_mail import Mail, Message
-from flask_pymongo import PyMongo
 from dotenv import load_dotenv
 import os
 import threading
@@ -56,10 +54,10 @@ mail = Mail(app)
 vgg_model = models.vgg11(weights=models.VGG11_Weights.IMAGENET1K_V1)  # B
 
 # load the model using your available device
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+# device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 vgg_model.classifier[-1] = nn.Linear(4096, 23)
 vgg_model.load_state_dict(torch.load('feature_extractor/vgg11_10_wikiart.pt',
-                                     map_location=torch.device(device)))
+                                     map_location=torch.device("cpu")))
 
 
 @app.route('/sendArtwork', methods=['POST'])
@@ -177,4 +175,4 @@ def postRoute():
 if __name__ == "__main__":
     from waitress import serve
     print("server is running at port "+str(os.getenv("PORT")))
-    serve(app, host="0.0.0.0",port=os.getenv("PORT"))
+    serve(app, host="0.0.0.0", port=os.getenv("PORT"))
