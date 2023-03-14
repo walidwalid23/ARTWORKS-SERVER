@@ -52,12 +52,11 @@ app.config['MAIL_USE_SSL'] = True
 mail = Mail(app)
 # Instantiate a VGG model with our saved weights
 vgg_model = models.vgg11(weights=models.VGG11_Weights.IMAGENET1K_V1)  # B
-vgg_model.to(torch.device("meta"))
 # load the model using your available device
-# device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 vgg_model.classifier[-1] = nn.Linear(4096, 23)
 vgg_model.load_state_dict(torch.load('feature_extractor/vgg11_10_wikiart.pt',
-                                     map_location=torch.device("cpu")))
+                                     map_location=torch.device(device)))
 
 
 @app.route('/sendArtwork', methods=['POST'])
