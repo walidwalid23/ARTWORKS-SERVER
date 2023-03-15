@@ -57,6 +57,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 vgg_model.classifier[-1] = nn.Linear(4096, 23)
 vgg_model.load_state_dict(torch.load('feature_extractor/vgg11_10_wikiart.pt',
                                      map_location=torch.device(device)))
+vgg_model.eval()
 
 
 @app.route('/sendArtwork', methods=['POST'])
