@@ -50,6 +50,7 @@ app.config['MAIL_PASSWORD'] = 'temlvwashllnqpbh'
 app.config['MAIL_USE_TLS'] = False
 app.config['MAIL_USE_SSL'] = True
 mail = Mail(app)
+
 # Instantiate a VGG model with our saved weights
 vgg_model = models.vgg11(weights=models.VGG11_Weights.IMAGENET1K_V1)  # B
 # load the model using your available device
