@@ -52,7 +52,7 @@ app.config['MAIL_USE_SSL'] = True
 mail = Mail(app)
 
 # Instantiate a VGG model with our saved weights
-vgg_model = models.vgg11(weights=models.VGG11_Weights.IMAGENET1K_V1)  # B
+vgg_model = models.vgg11(weights=None)  # B
 # load the model using your available device
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 vgg_model.classifier[-1] = nn.Linear(4096, 23)
