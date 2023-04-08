@@ -74,7 +74,7 @@ def postRoute():
         image.save(os.path.join(app.config['UPLOAD_FOLDER'], imageName))
         # prepare a success response since we received the image from the user
         successResponse = jsonify(
-            {"successMessage": "You will receive an email with the results shortly"})
+            {"successMessage": "You Will Receive An Email With The Results Shortly"})
     else:
         return jsonify(
             {"errorMessage": "Invalid File Type"})
