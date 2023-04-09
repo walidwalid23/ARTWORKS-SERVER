@@ -61,7 +61,7 @@ vgg_model.load_state_dict(torch.load('feature_extractor/vgg11_10_wikiart.pt',
 vgg_model.eval()
 
 
-@app.route('/sendArtwork', methods=['POST'])
+@app.route('/get-artworks-by-artist-nationality', methods=['POST'])
 def postRoute():
     print("in route")
     userEmail = request.form['email']
@@ -156,6 +156,129 @@ def postRoute():
                         # send the email to the user (you must put the mail.send inside the app context)
                         with app.app_context():
                             mail.send(msg)
+            if resultsFound == False:
+                # Send an email telling the user that no results were found
+                msg = Message('No Results Found',
+                              sender='stylebustersinc@gmail.com',
+                              recipients=[userEmail]
+                              )
+                msg.body = 'No Matching Artworks Have Been Found'
+                # send the email to the user (you must put the mail.send inside the app context)
+                with app.app_context():
+                    mail.send(msg)
+
+    thread = threading.Thread(target=on_close)
+    thread.start()
+    return successResponse
+
+# GET ALL ARTWORKS ROUTE
+
+
+@app.route('/get-all-artworks', methods=['POST'])
+def postRoute():
+    userEmail = request.form['email']
+    image = request.files['image']
+    artistsNationalities = ['American', 'Angolan', 'Argentine', 'Armenian', 'Australian', 'Austrian', 'Belarusian', 'Belgian', 'Beninese', 'Brazilian', 'British', 'Bulgarian', 'Burmese',
+                            'Cameroonian', 'Canadian', 'Catalan', 'Chilean', 'Chinese', 'Chinese-American', 'Colombian',
+                            'Congolese', 'Croatian', 'Cuban', 'Czech', 'Danish', 'Dominican', 'Dutch', 'Ecuadorian',
+                            'Egyptian', 'English', 'Finnish', 'French', 'French-Canadian', 'Georgian', 'German', 'Ghanaian',
+                            'Greek', 'Haitian', 'Hong Kong', 'Hungarian', 'Icelandic', 'Indian', 'Indonesian', 'Iranian', 'Iraqi',
+                            'Irish', 'Israeli', 'Italian', 'Ivorian', 'Jamaican', 'Japanese', 'Japanese-American', 'Jordanian', 'Kenyan',
+                            'Korean', 'Latvian', 'Lebanese', 'Lithuanian', 'Malaysian', 'Mexican', 'Moroccan', 'Mozambican', 'Netherlandish',
+                            'New Zealand', 'Nigerian', 'Norwegian', 'Pakistani', 'Palestinian', 'Peruvian', 'Philippine', 'Polish', 'Portuguese',
+                            'Puerto Rican', 'Romanian', 'Russian', 'Russian-American', 'Scottish', 'Senegalese', 'Serbian', 'Singaporean', 'Slovak',
+                            'Slovene', 'South African', 'South Korean', 'Spanish', 'Sudanese', 'Swedish', 'Swiss', 'Syrian', 'Taiwanese', 'Thai',
+                            'Turkish', 'Ugandan', 'Ukrainian', 'Uruguayan', 'Venezuelan', 'Vietnamese', 'Welsh', 'Zimbabwean', 'Other']
+
+    if image and allowed_file(image.filename):
+        imageName = secure_filename(image.filename)
+        # store the image in the uploads folder
+        image.save(os.path.join(app.config['UPLOAD_FOLDER'], imageName))
+        # prepare a success response since we received the image from the user
+        successResponse = jsonify(
+            {"successMessage": "You Will Receive An Email With The Results Shortly"})
+    else:
+        return jsonify(
+            {"errorMessage": "Invalid File Type"})
+
+    # run the below code after the Response is sent to user
+    # @successResponse.call_on_close
+    def on_close():
+        # If the user does not select a file, the browser submits an empty file without a filename.
+        if image.filename == '':
+            return jsonify({"error": "no selected image"})
+
+        if image and allowed_file(image.filename):
+            imageName = secure_filename(image.filename)
+            resultsFound = False
+            # get image path
+            artworkImgPath = 'uploads/'+imageName
+            # Load The Input Image
+            inputImage = Image.open(artworkImgPath)
+            # getting feature vector of the main artwork image
+            _transforms = transforms.Compose(
+                [
+                    transforms.Resize((224, 224)),
+                    transforms.ToTensor(),
+                    # standardization of pixel colors
+                    transforms.Normalize([0.485, 0.456, 0.406], [
+                                         0.229, 0.224, 0.225])
+                ])
+
+            input_image_matrix = np.asarray(
+                np.expand_dims(_transforms(inputImage), 0))
+            input_image_vector = vgg_model.features(
+                torch.tensor(input_image_matrix)).mean((2, 3))
+
+            for artistNationality in artistsNationalities:
+                # getting feature vectors of the retrieved artworks images
+                URL = "https://artworks-web-scraper.onrender.com/WalidArtworksApi?artistNationality=" + artistNationality
+                headers = {
+                    'Content-Type': 'application/json'
+                }
+                # send a request to get stream of artworks json objects
+                resp = requests.request(
+                    "GET", URL, headers=headers, stream=True)
+                # print(resp.headers['content-type'])
+                # print(resp.encoding)
+                # we iterate by lines since we added new line after each response from server side
+                for line in resp.iter_lines():
+                    if line:
+                        # the remote hosts encodes chunks using utf-8 but localhost doesn't they use (https*)
+                        decoded_chunk = line.decode('utf-8')
+                    # converting json to dict
+                        decodedArtworkObj = json.loads(decoded_chunk)
+
+                        retrievedArtworkDetails = decodedArtworkObj["artworkDetails"]
+                        artworkImageUrl = decodedArtworkObj["artworkImageUrl"]
+                        # extract features from each retrieved artwork image
+                        retrievedImage = Image.open(urlopen(artworkImageUrl))
+
+                        retrieved_image_matrix = np.asarray(
+                            np.expand_dims(_transforms(retrievedImage), 0))
+                        retrieved_image_vector = vgg_model.features(
+                            torch.tensor(retrieved_image_matrix)).mean((2, 3))
+
+                        # get the cosine similarity
+                        cosine_similarity = torch.cosine_similarity(
+                            input_image_vector, retrieved_image_vector)
+
+                        print("Cosine Similarity of The Main Image and Image:" +
+                              retrievedArtworkDetails + " is: " + str(cosine_similarity)+"%")
+                        if cosine_similarity > 0.75:
+                            print("MATCH")
+                            resultsFound = True
+                            # send email including the details of the matched logo
+                            msg = Message('Found A Match!',
+                                          sender='stylebustersinc@gmail.com',
+                                          recipients=[userEmail]
+                                          )
+                            msg.body = 'We found a matched Artwork! \n Artwork Details: ' + \
+                                retrievedArtworkDetails+'\n Artwork Image URL Is: '+artworkImageUrl + \
+                                '\n Similarity Percentage is: ' + cosine_similarity
+                            # send the email to the user (you must put the mail.send inside the app context)
+                            with app.app_context():
+                                mail.send(msg)
             if resultsFound == False:
                 # Send an email telling the user that no results were found
                 msg = Message('No Results Found',
