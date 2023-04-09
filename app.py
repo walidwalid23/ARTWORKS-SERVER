@@ -92,7 +92,7 @@ def getArtworksByArtistNationality():
             # get image path
             artworkImgPath = 'uploads/'+imageName
             # Load The Input Image
-            inputImage = Image.open(artworkImgPath)
+            inputImage = Image.open(artworkImgPath).convert('RGB')
             # getting feature vector of the main artwork image
             _transforms = transforms.Compose(
                 [
@@ -129,7 +129,8 @@ def getArtworksByArtistNationality():
                     retrievedArtworkDetails = decodedArtworkObj["artworkDetails"]
                     artworkImageUrl = decodedArtworkObj["artworkImageUrl"]
                     # extract features from each retrieved artwork image
-                    retrievedImage = Image.open(urlopen(artworkImageUrl))
+                    retrievedImage = Image.open(
+                        urlopen(artworkImageUrl)).convert('RGB')
 
                     retrieved_image_matrix = np.asarray(
                         np.expand_dims(_transforms(retrievedImage), 0))
@@ -216,7 +217,7 @@ def getAllArtworks():
             # get image path
             artworkImgPath = 'uploads/'+imageName
             # Load The Input Image
-            inputImage = Image.open(artworkImgPath)
+            inputImage = Image.open(artworkImgPath).convert('RGB')
             # getting feature vector of the main artwork image
             _transforms = transforms.Compose(
                 [
@@ -254,7 +255,8 @@ def getAllArtworks():
                         retrievedArtworkDetails = decodedArtworkObj["artworkDetails"]
                         artworkImageUrl = decodedArtworkObj["artworkImageUrl"]
                         # extract features from each retrieved artwork image
-                        retrievedImage = Image.open(urlopen(artworkImageUrl))
+                        retrievedImage = Image.open(
+                            urlopen(artworkImageUrl)).convert('RGB')
 
                         retrieved_image_matrix = np.asarray(
                             np.expand_dims(_transforms(retrievedImage), 0))
