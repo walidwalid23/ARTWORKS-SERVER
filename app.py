@@ -111,11 +111,12 @@ def getArtworksByArtistNationality():
             # getting feature vectors of the retrieved artworks images
             URL = "https://artworks-web-scraper.onrender.com/WalidArtworksApi?artistNationality=" + artistNationality
             headers = {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.75 Safari/537.36'
             }
             # send a request to get stream of artworks json objects
             resp = requests.request(
-                "GET", URL, headers=headers, stream=True)
+                "GET", URL, headers=headers, stream=True, verify=False)
             # print(resp.headers['content-type'])
             # print(resp.encoding)
             # we iterate by lines since we added new line after each response from server side
@@ -237,11 +238,12 @@ def getAllArtworks():
                 # getting feature vectors of the retrieved artworks images
                 URL = "https://artworks-web-scraper.onrender.com/WalidArtworksApi?artistNationality=" + artistNationality
                 headers = {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.75 Safari/537.36'
                 }
                 # send a request to get stream of artworks json objects
                 resp = requests.request(
-                    "GET", URL, headers=headers, stream=True)
+                    "GET", URL, headers=headers, stream=True, verify=False)
                 # print(resp.headers['content-type'])
                 # print(resp.encoding)
                 # we iterate by lines since we added new line after each response from server side
