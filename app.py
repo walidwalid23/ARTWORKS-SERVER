@@ -142,7 +142,7 @@ def getArtworksByArtistNationality():
                     string_cosine_similarity = str(
                         cosine_similarity)[8:12]+" %"
                     print("Cosine Similarity of The Main Image and Image:" +
-                          retrievedArtworkDetails + " is: " + string_cosine_similarity)
+                          retrievedArtworkDetails + " is: " + string_cosine_similarity+" ")
                     if cosine_similarity > 0.75:
                         print("MATCH")
                         resultsFound = True
