@@ -62,7 +62,7 @@ vgg_model.eval()
 
 
 @app.route('/get-artworks-by-artist-nationality', methods=['POST'])
-def postRoute():
+def getArtworksByArtistNationality():
     print("in route")
     userEmail = request.form['email']
     image = request.files['image']
@@ -175,7 +175,7 @@ def postRoute():
 
 
 @app.route('/get-all-artworks', methods=['POST'])
-def postRoute():
+def getAllArtworks():
     userEmail = request.form['email']
     image = request.files['image']
     artistsNationalities = ['American', 'Angolan', 'Argentine', 'Armenian', 'Australian', 'Austrian', 'Belarusian', 'Belgian', 'Beninese', 'Brazilian', 'British', 'Bulgarian', 'Burmese',
