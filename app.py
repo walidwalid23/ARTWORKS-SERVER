@@ -139,9 +139,10 @@ def getArtworksByArtistNationality():
                     # get the cosine similarity
                     cosine_similarity = torch.cosine_similarity(
                         input_image_vector, retrieved_image_vector)
-
+                    string_cosine_similarity = str(
+                        cosine_similarity)[8:12]+" %"
                     print("Cosine Similarity of The Main Image and Image:" +
-                          retrievedArtworkDetails + " is: " + str(cosine_similarity)+"%")
+                          retrievedArtworkDetails + " is: " + string_cosine_similarity)
                     if cosine_similarity > 0.75:
                         print("MATCH")
                         resultsFound = True
@@ -152,7 +153,7 @@ def getArtworksByArtistNationality():
                                       )
                         msg.body = 'We found a matched Artwork! \n Artwork Details: ' + \
                             retrievedArtworkDetails+'\n Artwork Image URL Is: '+artworkImageUrl + \
-                            '\n Similarity Percentage is: ' + cosine_similarity
+                            '\n Similarity Percentage is: ' + string_cosine_similarity
                         # send the email to the user (you must put the mail.send inside the app context)
                         with app.app_context():
                             mail.send(msg)
@@ -176,6 +177,7 @@ def getArtworksByArtistNationality():
 
 @app.route('/get-all-artworks', methods=['POST'])
 def getAllArtworks():
+    print("in get all artworks route")
     userEmail = request.form['email']
     image = request.files['image']
     artistsNationalities = ['American', 'Angolan', 'Argentine', 'Armenian', 'Australian', 'Austrian', 'Belarusian', 'Belgian', 'Beninese', 'Brazilian', 'British', 'Bulgarian', 'Burmese',
@@ -263,8 +265,11 @@ def getAllArtworks():
                         cosine_similarity = torch.cosine_similarity(
                             input_image_vector, retrieved_image_vector)
 
+                        string_cosine_similarity = str(
+                            cosine_similarity)[8:12]+" %"
+
                         print("Cosine Similarity of The Main Image and Image:" +
-                              retrievedArtworkDetails + " is: " + str(cosine_similarity)+"%")
+                              retrievedArtworkDetails + " is: " + string_cosine_similarity)
                         if cosine_similarity > 0.75:
                             print("MATCH")
                             resultsFound = True
@@ -275,7 +280,7 @@ def getAllArtworks():
                                           )
                             msg.body = 'We found a matched Artwork! \n Artwork Details: ' + \
                                 retrievedArtworkDetails+'\n Artwork Image URL Is: '+artworkImageUrl + \
-                                '\n Similarity Percentage is: ' + cosine_similarity
+                                '\n Similarity Percentage is: ' + string_cosine_similarity
                             # send the email to the user (you must put the mail.send inside the app context)
                             with app.app_context():
                                 mail.send(msg)
