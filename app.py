@@ -11,7 +11,6 @@ from urllib.request import urlopen
 import json
 import requests
 # %matplotlib inline
-import requests
 import json
 from flask_mail import Mail, Message
 from dotenv import load_dotenv
@@ -83,6 +82,9 @@ def getArtworksByArtistNationality():
     # run the below code after the Response is sent to user
     # @successResponse.call_on_close
     def on_close():
+        # using session:if several requests are being made to the same host, the underlying TCP connection will be reused (keep-alive)
+        # so when the web scraping server finishes it will wait for us instead of closing the connection after its time out finishes
+        session = requests.Session()
         # If the user does not select a file, the browser submits an empty file without a filename.
         if image.filename == '':
             return jsonify({"error": "no selected image"})
@@ -113,13 +115,13 @@ def getArtworksByArtistNationality():
             URL = "https://artworks-web-scraper.onrender.com/WalidArtworksApi?artistNationality=" + artistNationality
             headers = {
                 'Content-Type': 'application/json',
-                'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.75 Safari/537.36'
+                'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.75 Safari/537.36',
+                'Connection': 'keep-alive'
             }
             # send a request to get stream of artworks json objects
             # sleep to make sure the main thread will finish first before requesting
             time.sleep(0.01)
-            resp = requests.request(
-                "GET", URL, headers=headers, stream=True, verify=False)
+            resp = session.get(URL, headers=headers, stream=True, verify=False)
             # print(resp.headers['content-type'])
             # print(resp.encoding)
             # we iterate by lines since we added new line after each response from server side
@@ -211,6 +213,9 @@ def getAllArtworks():
     # run the below code after the Response is sent to user
     # @successResponse.call_on_close
     def on_close():
+        # using session:if several requests are being made to the same host, the underlying TCP connection will be reused (keep-alive)
+        # so when the web scraping server finishes it will wait for us instead of closing the connection after its time out finishes
+        session = requests.Session()
         # If the user does not select a file, the browser submits an empty file without a filename.
         if image.filename == '':
             return jsonify({"error": "no selected image"})
@@ -242,13 +247,14 @@ def getAllArtworks():
                 URL = "https://artworks-web-scraper.onrender.com/WalidArtworksApi?artistNationality=" + artistNationality
                 headers = {
                     'Content-Type': 'application/json',
-                    'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.75 Safari/537.36'
+                    'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.75 Safari/537.36',
+                    'Connection': 'keep-alive'
                 }
                 # send a request to get stream of artworks json objects
                 # sleep to make sure the main thread will finish first before requesting
                 time.sleep(0.01)
-                resp = requests.request(
-                    "GET", URL, headers=headers, stream=True, verify=False)
+                resp = session.get(URL, headers=headers,
+                                   stream=True, verify=False)
                 # print(resp.headers['content-type'])
                 # print(resp.encoding)
                 # we iterate by lines since we added new line after each response from server side
