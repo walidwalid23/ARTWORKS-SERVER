@@ -282,7 +282,8 @@ def getAllArtworks():
 
                         string_cosine_similarity = str(
                             cosine_similarity)[8:12]+" %"
-                        print('at max price: '+decodedArtworkObj["maxPrice"])
+                        print('at max price: ' +
+                              str(decodedArtworkObj["maxPrice"]))
                         print("Cosine Similarity of The Main Image and Image:" +
                               retrievedArtworkDetails + " is: " + string_cosine_similarity)
                         if cosine_similarity > 0.75:
