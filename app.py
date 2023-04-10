@@ -17,6 +17,7 @@ from flask_mail import Mail, Message
 from dotenv import load_dotenv
 import os
 import threading
+import time
 
 global embed
 
@@ -115,6 +116,8 @@ def getArtworksByArtistNationality():
                 'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.75 Safari/537.36'
             }
             # send a request to get stream of artworks json objects
+            # sleep to make sure the main thread will finish first before requesting
+            time.sleep(0.01)
             resp = requests.request(
                 "GET", URL, headers=headers, stream=True, verify=False)
             # print(resp.headers['content-type'])
@@ -242,6 +245,8 @@ def getAllArtworks():
                     'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.75 Safari/537.36'
                 }
                 # send a request to get stream of artworks json objects
+                # sleep to make sure the main thread will finish first before requesting
+                time.sleep(0.01)
                 resp = requests.request(
                     "GET", URL, headers=headers, stream=True, verify=False)
                 # print(resp.headers['content-type'])
@@ -288,6 +293,8 @@ def getAllArtworks():
                             # send the email to the user (you must put the mail.send inside the app context)
                             with app.app_context():
                                 mail.send(msg)
+
+                print("at: "+artistNationality)
             if resultsFound == False:
                 # Send an email telling the user that no results were found
                 msg = Message('No Results Found',
