@@ -83,7 +83,6 @@ def getArtworksByArtistNationality():
     # @successResponse.call_on_close
     def on_close():
         # using session:if several requests are being made to the same host, the underlying TCP connection will be reused (keep-alive)
-        # so when the web scraping server finishes it will wait for us instead of closing the connection after its time out finishes
         session = requests.Session()
         # If the user does not select a file, the browser submits an empty file without a filename.
         if image.filename == '':
@@ -116,12 +115,12 @@ def getArtworksByArtistNationality():
             headers = {
                 'Content-Type': 'application/json',
                 'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.75 Safari/537.36',
-                'Connection': 'keep-alive'
+
             }
             # send a request to get stream of artworks json objects
             # sleep to make sure the main thread will finish first before requesting
             time.sleep(0.01)
-            resp = session.get(URL, headers=headers, stream=True, verify=False)
+            resp = session.get(URL, headers=headers, stream=True)
             # print(resp.headers['content-type'])
             # print(resp.encoding)
             # we iterate by lines since we added new line after each response from server side
@@ -134,6 +133,7 @@ def getArtworksByArtistNationality():
 
                     retrievedArtworkDetails = decodedArtworkObj["artworkDetails"]
                     artworkImageUrl = decodedArtworkObj["artworkImageUrl"]
+                    lastArtwork = decodedArtworkObj["lastArtwork"]
                     # extract features from each retrieved artwork image
                     retrievedImage = Image.open(
                         urlopen(artworkImageUrl)).convert('RGB')
@@ -164,6 +164,13 @@ def getArtworksByArtistNationality():
                         # send the email to the user (you must put the mail.send inside the app context)
                         with app.app_context():
                             mail.send(msg)
+                    # close connection after the last image (can't be closed after the for loop due to a bug)
+                    if (retrievedArtworkDetails == lastArtwork):
+                        print("this is the last image for nationality: " +
+                              artistNationality)
+                        resp.close()
+                        break
+
             if resultsFound == False:
                 # Send an email telling the user that no results were found
                 msg = Message('No Results Found',
@@ -213,8 +220,6 @@ def getAllArtworks():
     # run the below code after the Response is sent to user
     # @successResponse.call_on_close
     def on_close():
-        # using session:if several requests are being made to the same host, the underlying TCP connection will be reused (keep-alive)
-        # so when the web scraping server finishes it will wait for us instead of closing the connection after its time out finishes
         session = requests.Session()
         # If the user does not select a file, the browser submits an empty file without a filename.
         if image.filename == '':
@@ -243,18 +248,18 @@ def getAllArtworks():
                 torch.tensor(input_image_matrix)).mean((2, 3))
 
             for artistNationality in artistsNationalities:
+                print("at: "+artistNationality)
                 # getting feature vectors of the retrieved artworks images
                 URL = "https://artworks-web-scraper.onrender.com/WalidArtworksApi?artistNationality=" + artistNationality
                 headers = {
                     'Content-Type': 'application/json',
                     'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.75 Safari/537.36',
-                    'Connection': 'keep-alive'
                 }
                 # send a request to get stream of artworks json objects
                 # sleep to make sure the main thread will finish first before requesting
                 time.sleep(0.01)
                 resp = session.get(URL, headers=headers,
-                                   stream=True, verify=False)
+                                   stream=True)
                 # print(resp.headers['content-type'])
                 # print(resp.encoding)
                 # we iterate by lines since we added new line after each response from server side
@@ -267,6 +272,7 @@ def getAllArtworks():
 
                         retrievedArtworkDetails = decodedArtworkObj["artworkDetails"]
                         artworkImageUrl = decodedArtworkObj["artworkImageUrl"]
+                        lastArtwork = decodedArtworkObj["lastArtwork"]
                         # extract features from each retrieved artwork image
                         retrievedImage = Image.open(
                             urlopen(artworkImageUrl)).convert('RGB')
@@ -300,8 +306,13 @@ def getAllArtworks():
                             # send the email to the user (you must put the mail.send inside the app context)
                             with app.app_context():
                                 mail.send(msg)
+                        # close connection after the last image (can't be closed after the for loop due to a bug)
+                        if (retrievedArtworkDetails == lastArtwork):
+                            print(
+                                "this is the last image for nationality: "+artistNationality)
+                            resp.close()
+                            break
 
-                print("at: "+artistNationality)
             if resultsFound == False:
                 # Send an email telling the user that no results were found
                 msg = Message('No Results Found',
