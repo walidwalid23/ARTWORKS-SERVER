@@ -333,4 +333,4 @@ def getAllArtworks():
 if __name__ == "__main__":
     from waitress import serve
     print("server is running at port "+str(os.getenv("PORT")))
-    serve(app, host="0.0.0.0", port=os.getenv("PORT"))
+    serve(app, port=os.getenv("PORT"))
