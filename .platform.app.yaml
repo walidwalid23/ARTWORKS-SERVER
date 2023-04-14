@@ -29,9 +29,7 @@ hooks:
 web:
   commands: 
     start: "python app.py"
-  upstream:
-    socket_family: tcp
-    protocol: http
+  
   locations: 
     '/': 
       passthru: true
