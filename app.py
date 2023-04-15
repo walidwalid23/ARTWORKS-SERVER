@@ -17,6 +17,8 @@ from dotenv import load_dotenv
 import os
 import threading
 import time
+from platformshconfig import Config
+config = Config()
 
 global embed
 
@@ -59,6 +61,12 @@ vgg_model.classifier[-1] = nn.Linear(4096, 23)
 vgg_model.load_state_dict(torch.load('feature_extractor/vgg11_10_wikiart.pt',
                                      map_location=torch.device(device)))
 vgg_model.eval()
+
+
+@app.route('/', methods=['GET'])
+def root():
+    return jsonify(
+        {"you are at root": "This is the root of stylebusters-artworks"})
 
 
 @app.route('/get-artworks-by-artist-nationality', methods=['POST'])
@@ -333,4 +341,4 @@ def getAllArtworks():
 if __name__ == "__main__":
     from waitress import serve
     print("server is running at port "+str(os.getenv("PORT")))
-    serve(app, port=os.getenv("PORT"))
+    serve(app, port=int(config.port))
