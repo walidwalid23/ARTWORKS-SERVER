@@ -10,4 +10,4 @@ torch==2.0.0
 torchvision==0.15.1
 waitress==2.1.2
 Werkzeug==2.2.2
-platformshconfig==2.4.0
+

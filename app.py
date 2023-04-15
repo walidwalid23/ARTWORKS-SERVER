@@ -17,8 +17,6 @@ from dotenv import load_dotenv
 import os
 import threading
 import time
-from platformshconfig import Config
-config = Config()
 
 global embed
 
@@ -66,7 +64,7 @@ vgg_model.eval()
 @app.route('/', methods=['GET'])
 def root():
     return jsonify(
-        {"you are at root": "This is the root of stylebusters-artworks"})
+        {"you are at root": "This is the root of stylebusters artworks app"})
 
 
 @app.route('/get-artworks-by-artist-nationality', methods=['POST'])
@@ -265,7 +263,7 @@ def getAllArtworks():
                 }
                 # send a request to get stream of artworks json objects
                 # sleep to make sure the main thread will finish first before requesting
-                time.sleep(0.01)
+                time.sleep(0.001)
                 resp = session.get(URL, headers=headers,
                                    stream=True)
                 # print(resp.headers['content-type'])
@@ -341,4 +339,4 @@ def getAllArtworks():
 if __name__ == "__main__":
     from waitress import serve
     print("server is running at port "+str(os.getenv("PORT")))
-    serve(app, port=int(config.port))
+    serve(app, port=os.getenv("PORT"))
