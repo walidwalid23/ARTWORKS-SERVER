@@ -15,9 +15,12 @@ type: 'python:3.11'
 # application container. The 'source_path' specifies the subdirectory
 # from within the source that the mount should point at. 
 mounts:
-  'web/uploads':
+  'uploads':
     source: local
     source_path: uploads
+  '.cache':
+    source: local
+    source_path: /app/.cache
 
 # The size of the persistent disk of the application (in MB).
 disk: 2048
