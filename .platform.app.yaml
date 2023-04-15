@@ -18,6 +18,9 @@ mounts:
   'uploads':
     source: local
     source_path: uploads
+  'feature_extractor':
+    source: local
+    source_path: feature_extractor
   '.cache':
     source: local
     source_path: app/.cache
