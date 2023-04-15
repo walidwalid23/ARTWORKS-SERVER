@@ -20,7 +20,7 @@ mounts:
     source_path: uploads
   '.cache':
     source: local
-    source_path: /app/.cache
+    source_path: app/.cache
 
 # The size of the persistent disk of the application (in MB).
 disk: 3048
