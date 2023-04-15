@@ -15,7 +15,9 @@ type: 'python:3.9'
 # application container. The 'source_path' specifies the subdirectory
 # from within the source that the mount should point at. 
 mounts:
- 
+  'uploads':
+    source: local
+    source_path: uploads
   '.cache':
     source: local
     source_path: app/.cache
