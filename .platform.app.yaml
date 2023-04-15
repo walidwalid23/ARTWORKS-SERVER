@@ -7,7 +7,7 @@ name: app
 # in multiple versions. Check the Python documentation
 # (https://docs.platform.sh/languages/python.html#supported-versions)
 # to find the supported versions for the 'python' type.
-type: 'python:3.11'
+type: 'python:3.9'
 
 # The following block defines a single writable directory, 'web/uploads'
 # The 'source' specifies where the writable mount is. The 'local' source
@@ -15,12 +15,7 @@ type: 'python:3.11'
 # application container. The 'source_path' specifies the subdirectory
 # from within the source that the mount should point at. 
 mounts:
-  'uploads':
-    source: local
-    source_path: uploads
-  'feature_extractor':
-    source: local
-    source_path: feature_extractor
+ 
   '.cache':
     source: local
     source_path: app/.cache
