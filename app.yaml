@@ -13,8 +13,8 @@
 # limitations under the License.
 
 runtime: python39
-env: flex
-#entrypoint: gunicorn -b :$PORT main:app
+
+
 
 
 
