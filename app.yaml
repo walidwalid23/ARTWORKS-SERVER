@@ -14,7 +14,7 @@
 
 runtime: python39
 env: flex
-entrypoint: gunicorn -b :$PORT main:app
+#entrypoint: gunicorn -b :$PORT main:app
 
 
 
