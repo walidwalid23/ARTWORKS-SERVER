@@ -13,8 +13,9 @@
 # limitations under the License.
 
 runtime: python39
-# using the automatic instance class F4 since it provides 1GB of ram
-instance_class: F4 
+
+instance_class: F4_1G
+
 
   
 
