@@ -16,7 +16,6 @@ runtime: python39
 env: flex
 entrypoint: gunicorn -b :$PORT main:app
 
-runtime_config:
-  operating_system: ubuntu22
+
 
 
