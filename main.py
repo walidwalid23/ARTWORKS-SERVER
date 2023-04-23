@@ -22,9 +22,9 @@ global embed
 
 load_dotenv()
 
-# uploaded logos folder
+# uploaded artworks folder
 UPLOAD_FOLDER = 'uploads'
-# allowed logos images extensions
+# allowed artworks images extensions
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
 
 
