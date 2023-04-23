@@ -36,12 +36,7 @@ def allowed_file(filename):
 # preparing the server
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-# THE DATABASE NAME MUST BE ADDED IN THE URI BEFORE THE ? OR THE DB OBJECT WILL BE NONE
-# app.config['MONGO_URI'] = "mongodb+srv://walidwalid:"+os.getenv(
-#    "DB_PASS")+"@cluster0.dwtedah.mongodb.net/Artworks_Features_DB?retryWrites=true&w=majority"
 
-# mongo_client = PyMongo(app)
-# extractedFeaturesCollec = mongo_client.db.extracted_features_col
 # configuration of mail
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 465
