@@ -14,7 +14,7 @@
 
 runtime: python
 env: flex
-entrypoint: gunicorn -b :$PORT main:app
+entrypoint: gunicorn -t 0 -b :$PORT main:app
 # setting instance class doesn't make much change in flexible environments since in flexible we create our own instance class with
 # the customized resources needed for our app
 #instance_class: F4
@@ -29,7 +29,7 @@ automatic_scaling:
 resources:
   cpu: 1
   memory_gb: 2
-  disk_size_gb: 30 
+  disk_size_gb: 25 
 
 readiness_check:
   app_start_timeout_sec: 1800

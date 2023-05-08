@@ -62,12 +62,14 @@ def root():
         {"you are at root": "This is the root of stylebusters artworks app"})
 
 
-@app.route('/get-artworks-by-artist-nationality', methods=['POST'])
+@app.route('/get-artworks', methods=['POST'])
 def getArtworksByArtistNationality():
     print("in route")
-    userEmail = request.form['email']
     image = request.files['image']
-    artistNationality = request.form['artistNationality']
+    userEmail = request.form['email']
+    artistNationality = request.form['artistNationality'] if 'artistNationality' in request.form and request.form['artistNationality'] != None else None
+    material = request.form['material'] if 'material' in request.form and request.form['material'] != None else None
+    timePeriod = request.form['timePeriod'] if 'timePeriod' in request.form and request.form['timePeriod'] != None else None
 
     if image and allowed_file(image.filename):
         imageName = secure_filename(image.filename)
@@ -87,7 +89,7 @@ def getArtworksByArtistNationality():
         session = requests.Session()
         # If the user does not select a file, the browser submits an empty file without a filename.
         if image.filename == '':
-            return jsonify({"error": "no selected image"})
+            return jsonify({"errorMessage": "no selected image"})
 
         if image and allowed_file(image.filename):
             imageName = secure_filename(image.filename)
@@ -112,7 +114,28 @@ def getArtworksByArtistNationality():
                 torch.tensor(input_image_matrix)).mean((2, 3))
 
             # getting feature vectors of the retrieved artworks images
-            URL = "https://artworks-web-scraper.onrender.com/WalidArtworksApi?artistNationality=" + artistNationality
+            queries = ''
+            queriesCount = 0
+            if artistNationality != None:
+                queries += 'artistNationality=' + artistNationality
+                queriesCount += 1
+
+            if material != None:
+                if queriesCount > 0:
+                    queries += "&"
+
+                queries += 'materials_terms=' + material
+                queriesCount += 1
+
+            if timePeriod != None:
+                if queriesCount > 0:
+                    queries += "&"
+
+                queries += 'major_periods=' + timePeriod
+                queriesCount += 1
+
+            URL = "https://artworks-web-scraper.onrender.com/WalidArtworksApi?"+queries
+            print(URL)
             headers = {
                 'Content-Type': 'application/json',
                 'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.75 Safari/537.36',
