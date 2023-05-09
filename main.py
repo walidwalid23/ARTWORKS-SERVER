@@ -17,6 +17,7 @@ from dotenv import load_dotenv
 import os
 import threading
 import time
+from io import BytesIO
 
 global embed
 
@@ -148,6 +149,7 @@ def getArtworksByArtistNationality():
             # print(resp.headers['content-type'])
             # print(resp.encoding)
             # we iterate by lines since we added new line after each response from server side
+            session2 = requests.Session()
             for line in resp.iter_lines():
                 if line:
                     # the remote hosts encodes chunks using utf-8 but localhost doesn't they use (https*)
@@ -158,9 +160,22 @@ def getArtworksByArtistNationality():
                     retrievedArtworkDetails = decodedArtworkObj["artworkDetails"]
                     artworkImageUrl = decodedArtworkObj["artworkImageUrl"]
                     lastArtwork = decodedArtworkObj["lastArtwork"]
+                # request the image with headers
+                    resp = session.get(artworkImageUrl,
+                                       headers={
+                                           "accept": "*/*",
+                                           "content-type": "application/json",
+                                           "dnt": "1",
+                                           "origin": "https://www.artsy.net",
+                                           "user-agent": 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36',
+                                           'Connection': 'keep-alive',
+                                           "sec-ch-ua": '"Chromium";v="112", "Google Chrome";v="112", "Not:A-Brand";v="99"',
+                                           "accept-language": "en-US,en;q=0.9"
+
+                                       })
                     # extract features from each retrieved artwork image
                     retrievedImage = Image.open(
-                        urlopen(artworkImageUrl)).convert('RGB')
+                        BytesIO(resp.content)).convert('RGB')
 
                     retrieved_image_matrix = np.asarray(
                         np.expand_dims(_transforms(retrievedImage), 0))
@@ -174,7 +189,7 @@ def getArtworksByArtistNationality():
                         cosine_similarity)[8:12]+" %"
                     print("Cosine Similarity of The Main Image and Image:" +
                           retrievedArtworkDetails + " is: " + string_cosine_similarity+" ")
-                    if cosine_similarity > 0.75:
+                    if cosine_similarity >= 0.70:
                         print("MATCH")
                         resultsFound = True
                         # send email including the details of the matched logo
@@ -192,6 +207,14 @@ def getArtworksByArtistNationality():
                     print("last artwork: " + str(lastArtwork))
                     if (retrievedArtworkDetails == lastArtwork):
                         print("in last artwork")
+                        msg = Message('Search For Artworks Has Finished',
+                                      sender='stylebustersinc@gmail.com',
+                                      recipients=[userEmail]
+                                      )
+                        msg.body = 'The Search For Artworks Has Finished'
+                        # send the email to the user (you must put the mail.send inside the app context)
+                        with app.app_context():
+                            mail.send(msg)
 
                         resp.close()
                         break
