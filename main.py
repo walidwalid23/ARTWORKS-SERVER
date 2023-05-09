@@ -149,7 +149,7 @@ def getArtworksByArtistNationality():
             # print(resp.headers['content-type'])
             # print(resp.encoding)
             # we iterate by lines since we added new line after each response from server side
-            session2 = requests.Session()
+            
             for line in resp.iter_lines():
                 if line:
                     # the remote hosts encodes chunks using utf-8 but localhost doesn't they use (https*)
@@ -161,7 +161,8 @@ def getArtworksByArtistNationality():
                     artworkImageUrl = decodedArtworkObj["artworkImageUrl"]
                     lastArtwork = decodedArtworkObj["lastArtwork"]
                 # request the image with headers
-                    resp = session.get(artworkImageUrl,
+                    session2 = requests.Session()
+                    resp = session2.get(artworkImageUrl,
                                        headers={
                                            "accept": "*/*",
                                            "content-type": "application/json",
