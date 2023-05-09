@@ -38,12 +38,12 @@ app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 # configuration of mail
-app.config['MAIL_SERVER'] = 'smtp.gmail.com'
-app.config['MAIL_PORT'] = 465
-app.config['MAIL_USERNAME'] = 'stylebustersinc@gmail.com'
-app.config['MAIL_PASSWORD'] = 'temlvwashllnqpbh'
+app.config['MAIL_SERVER'] = 'smtp-relay.sendinblue.com'
+app.config['MAIL_PORT'] = 587
+app.config['MAIL_USERNAME'] = 'walid.tawfik2000@hotmail.com'
+app.config['MAIL_PASSWORD'] = 'cNxhb5W6EpAIXDUj'
 app.config['MAIL_USE_TLS'] = False
-app.config['MAIL_USE_SSL'] = True
+app.config['MAIL_USE_SSL'] = False
 mail = Mail(app)
 
 # Instantiate a VGG model with our saved weights
@@ -134,7 +134,7 @@ def getArtworksByArtistNationality():
                 queries += 'major_periods=' + timePeriod
                 queriesCount += 1
 
-            URL = "https://artworks-web-scraper.onrender.com/WalidArtworksApi?"+queries
+            URL = "http://localhost:3000/WalidArtworksApi?"+queries
             print(URL)
             headers = {
                 'Content-Type': 'application/json',
@@ -174,7 +174,7 @@ def getArtworksByArtistNationality():
                         cosine_similarity)[8:12]+" %"
                     print("Cosine Similarity of The Main Image and Image:" +
                           retrievedArtworkDetails + " is: " + string_cosine_similarity+" ")
-                    if cosine_similarity > 0.75:
+                    if cosine_similarity > 0.25:
                         print("MATCH")
                         resultsFound = True
                         # send email including the details of the matched logo
@@ -189,9 +189,18 @@ def getArtworksByArtistNationality():
                         with app.app_context():
                             mail.send(msg)
                     # close connection after the last image (can't be closed after the for loop due to a bug)
+                    print("last artwork: " + str(lastArtwork))
                     if (retrievedArtworkDetails == lastArtwork):
-                        print("this is the last image for nationality: " +
-                              artistNationality)
+                        print("in last artwork")
+                        msg = Message('Search For Artworks Has Finished',
+                                      sender='stylebustersinc@gmail.com',
+                                      recipients=[userEmail]
+                                      )
+                        msg.body = 'The Search For Artworks Has Finished'
+                        # send the email to the user (you must put the mail.send inside the app context)
+                        with app.app_context():
+                            mail.send(msg)
+
                         resp.close()
                         break
 
