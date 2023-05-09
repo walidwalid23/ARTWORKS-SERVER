@@ -174,7 +174,7 @@ def getArtworksByArtistNationality():
                         cosine_similarity)[8:12]+" %"
                     print("Cosine Similarity of The Main Image and Image:" +
                           retrievedArtworkDetails + " is: " + string_cosine_similarity+" ")
-                    if cosine_similarity > 0.25:
+                    if cosine_similarity > 0.75:
                         print("MATCH")
                         resultsFound = True
                         # send email including the details of the matched logo
@@ -192,14 +192,6 @@ def getArtworksByArtistNationality():
                     print("last artwork: " + str(lastArtwork))
                     if (retrievedArtworkDetails == lastArtwork):
                         print("in last artwork")
-                        msg = Message('Search For Artworks Has Finished',
-                                      sender='stylebustersinc@gmail.com',
-                                      recipients=[userEmail]
-                                      )
-                        msg.body = 'The Search For Artworks Has Finished'
-                        # send the email to the user (you must put the mail.send inside the app context)
-                        with app.app_context():
-                            mail.send(msg)
 
                         resp.close()
                         break
