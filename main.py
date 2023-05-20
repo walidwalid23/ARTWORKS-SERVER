@@ -64,7 +64,7 @@ def root():
 
 
 @app.route('/get-artworks', methods=['POST'])
-def getArtworksByArtistNationality():
+def getStolenArtworks():
     print("in route")
     image = request.files['image']
     userEmail = request.form['email']
@@ -149,7 +149,7 @@ def getArtworksByArtistNationality():
             # print(resp.headers['content-type'])
             # print(resp.encoding)
             # we iterate by lines since we added new line after each response from server side
-            
+
             for line in resp.iter_lines():
                 if line:
                     # the remote hosts encodes chunks using utf-8 but localhost doesn't they use (https*)
@@ -161,19 +161,195 @@ def getArtworksByArtistNationality():
                     artworkImageUrl = decodedArtworkObj["artworkImageUrl"]
                     lastArtwork = decodedArtworkObj["lastArtwork"]
                 # request the image with headers
+                    time.sleep(0.3)
                     session2 = requests.Session()
                     resp = session2.get(artworkImageUrl,
-                                       headers={
-                                           "accept": "*/*",
-                                           "content-type": "application/json",
-                                           "dnt": "1",
-                                           "origin": "https://www.artsy.net",
-                                           "user-agent": 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36',
-                                           'Connection': 'keep-alive',
-                                           "sec-ch-ua": '"Chromium";v="112", "Google Chrome";v="112", "Not:A-Brand";v="99"',
-                                           "accept-language": "en-US,en;q=0.9"
+                                        headers={
+                                            "accept": "*/*",
+                                            "content-type": "application/json",
+                                            "dnt": "1",
+                                            "origin": "https://www.artsy.net",
+                                            "user-agent": 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36',
+                                            'Connection': 'keep-alive',
+                                            "sec-ch-ua": '"Chromium";v="112", "Google Chrome";v="112", "Not:A-Brand";v="99"',
+                                            "accept-language": "en-US,en;q=0.9"
 
-                                       })
+                                        })
+                    # extract features from each retrieved artwork image
+                    retrievedImage = Image.open(
+                        BytesIO(resp.content)).convert('RGB')
+
+                    retrieved_image_matrix = np.asarray(
+                        np.expand_dims(_transforms(retrievedImage), 0))
+                    retrieved_image_vector = vgg_model.features(
+                        torch.tensor(retrieved_image_matrix)).mean((2, 3))
+
+                    # get the cosine similarity
+                    cosine_similarity = torch.cosine_similarity(
+                        input_image_vector, retrieved_image_vector)
+                    string_cosine_similarity = str(
+                        cosine_similarity)[8:12]+" %"
+                    print("Cosine Similarity of The Main Image and Image:" +
+                          retrievedArtworkDetails + " is: " + string_cosine_similarity+" ")
+                    if cosine_similarity >= 0.75:
+                        print("MATCH")
+                        resultsFound = True
+                        # send email including the details of the matched logo
+                        msg = Message('Found A Matched Artwork!',
+                                      sender='stylebustersinc@gmail.com',
+                                      recipients=[userEmail]
+                                      )
+                        msg.body = 'We found a matched Artwork! \n Artwork Details: ' + \
+                            retrievedArtworkDetails+'\n Artwork Image URL Is: '+artworkImageUrl + \
+                            '\n Similarity Percentage is: ' + string_cosine_similarity
+                        # send the email to the user (you must put the mail.send inside the app context)
+                        with app.app_context():
+                            mail.send(msg)
+                    # close connection after the last image (can't be closed after the for loop due to a bug)
+                    print("last artwork: " + str(lastArtwork))
+                    if (retrievedArtworkDetails == lastArtwork):
+                        print("in last artwork")
+                        msg = Message('Search For Artworks Has Finished',
+                                      sender='stylebustersinc@gmail.com',
+                                      recipients=[userEmail]
+                                      )
+                        msg.body = 'The Search For Artworks Has Finished'
+                        # send the email to the user (you must put the mail.send inside the app context)
+                        with app.app_context():
+                            mail.send(msg)
+
+                        resp.close()
+                        break
+
+            if resultsFound == False:
+                # Send an email telling the user that no results were found
+                msg = Message('No Results Found',
+                              sender='stylebustersinc@gmail.com',
+                              recipients=[userEmail]
+                              )
+                msg.body = 'No Matching Artworks Have Been Found'
+                # send the email to the user (you must put the mail.send inside the app context)
+                with app.app_context():
+                    mail.send(msg)
+
+    thread = threading.Thread(target=on_close)
+    thread.start()
+    return successResponse
+
+
+# GET INSPIRED ARTWORKS ROUTE
+@app.route('/get-artworks-inspiration', methods=['POST'])
+def getInspiredArtworks():
+    print("in route")
+    image = request.files['image']
+    userEmail = request.form['email']
+    artistNationality = request.form['artistNationality'] if 'artistNationality' in request.form and request.form['artistNationality'] != None else None
+    material = request.form['material'] if 'material' in request.form and request.form['material'] != None else None
+    timePeriod = request.form['timePeriod'] if 'timePeriod' in request.form and request.form['timePeriod'] != None else None
+
+    if image and allowed_file(image.filename):
+        imageName = secure_filename(image.filename)
+        # store the image in the uploads folder
+        image.save(os.path.join(app.config['UPLOAD_FOLDER'], imageName))
+        # prepare a success response since we received the image from the user
+        successResponse = jsonify(
+            {"successMessage": "You Will Receive An Email With The Results Shortly"})
+    else:
+        return jsonify(
+            {"errorMessage": "Invalid File Type"})
+
+    # run the below code after the Response is sent to user
+    # @successResponse.call_on_close
+    def on_close():
+        # using session:if several requests are being made to the same host, the underlying TCP connection will be reused (keep-alive)
+        session = requests.Session()
+        # If the user does not select a file, the browser submits an empty file without a filename.
+        if image.filename == '':
+            return jsonify({"errorMessage": "no selected image"})
+
+        if image and allowed_file(image.filename):
+            imageName = secure_filename(image.filename)
+            resultsFound = False
+            # get image path
+            artworkImgPath = 'uploads/'+imageName
+            # Load The Input Image
+            inputImage = Image.open(artworkImgPath).convert('RGB')
+            # getting feature vector of the main artwork image
+            _transforms = transforms.Compose(
+                [
+                    transforms.Resize((224, 224)),
+                    transforms.ToTensor(),
+                    # standardization of pixel colors
+                    transforms.Normalize([0.485, 0.456, 0.406], [
+                                         0.229, 0.224, 0.225])
+                ])
+
+            input_image_matrix = np.asarray(
+                np.expand_dims(_transforms(inputImage), 0))
+            input_image_vector = vgg_model.features(
+                torch.tensor(input_image_matrix)).mean((2, 3))
+
+            # getting feature vectors of the retrieved artworks images
+            queries = ''
+            queriesCount = 0
+            if artistNationality != None:
+                queries += 'artistNationality=' + artistNationality
+                queriesCount += 1
+
+            if material != None:
+                if queriesCount > 0:
+                    queries += "&"
+
+                queries += 'materials_terms=' + material
+                queriesCount += 1
+
+            if timePeriod != None:
+                if queriesCount > 0:
+                    queries += "&"
+
+                queries += 'major_periods=' + timePeriod
+                queriesCount += 1
+
+            URL = "http://localhost:3000/WalidArtworksApi?"+queries
+            print(URL)
+            headers = {
+                'Content-Type': 'application/json',
+                'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.75 Safari/537.36',
+
+            }
+            # send a request to get stream of artworks json objects
+            # sleep to make sure the main thread will finish first before requesting
+            time.sleep(0.01)
+            resp = session.get(URL, headers=headers, stream=True)
+            # print(resp.headers['content-type'])
+            # print(resp.encoding)
+            # we iterate by lines since we added new line after each response from server side
+
+            for line in resp.iter_lines():
+                if line:
+                    # the remote hosts encodes chunks using utf-8 but localhost doesn't they use (https*)
+                    decoded_chunk = line.decode('utf-8')
+                # converting json to dict
+                    decodedArtworkObj = json.loads(decoded_chunk)
+
+                    retrievedArtworkDetails = decodedArtworkObj["artworkDetails"]
+                    artworkImageUrl = decodedArtworkObj["artworkImageUrl"]
+                    lastArtwork = decodedArtworkObj["lastArtwork"]
+                # request the image with headers
+                    time.sleep(0.3)
+                    session2 = requests.Session()
+                    resp = session2.get(artworkImageUrl,
+                                        headers={
+                                            "accept": "*/*",
+                                            "content-type": "application/json",
+                                            "dnt": "1",
+                                            "origin": "https://www.artsy.net",
+                                            "user-agent": 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36',
+                                            'Connection': 'keep-alive',
+                                            "sec-ch-ua": '"Chromium";v="112", "Google Chrome";v="112", "Not:A-Brand";v="99"',
+                                            "accept-language": "en-US,en;q=0.9"
+
+                                        })
                     # extract features from each retrieved artwork image
                     retrievedImage = Image.open(
                         BytesIO(resp.content)).convert('RGB')
@@ -194,7 +370,7 @@ def getArtworksByArtistNationality():
                         print("MATCH")
                         resultsFound = True
                         # send email including the details of the matched logo
-                        msg = Message('Found A Match!',
+                        msg = Message('Found A Matched Artwork!',
                                       sender='stylebustersinc@gmail.com',
                                       recipients=[userEmail]
                                       )
@@ -299,7 +475,7 @@ def getAllArtworks():
             for artistNationality in artistsNationalities:
                 print("at: "+artistNationality)
                 # getting feature vectors of the retrieved artworks images
-                URL = "https://artworks-web-scraper.onrender.com/WalidArtworksApi?artistNationality=" + artistNationality
+                URL = "http://localhost:3000/WalidArtworksApi?artistNationality=" + artistNationality
                 headers = {
                     'Content-Type': 'application/json',
                     'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.75 Safari/537.36',
@@ -345,7 +521,7 @@ def getAllArtworks():
                             print("MATCH")
                             resultsFound = True
                             # send email including the details of the matched logo
-                            msg = Message('Found A Match!',
+                            msg = Message('Found A Matched Artwork!',
                                           sender='stylebustersinc@gmail.com',
                                           recipients=[userEmail]
                                           )
