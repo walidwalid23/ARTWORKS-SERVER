@@ -135,7 +135,7 @@ def getStolenArtworks():
                 queries += 'major_periods=' + timePeriod
                 queriesCount += 1
 
-            URL = "http://localhost:3000/WalidArtworksApi?"+queries
+            URL = "https://artworks-web-scraping-production.up.railway.app/WalidArtworksApi?"+queries
             print(URL)
             headers = {
                 'Content-Type': 'application/json',
@@ -310,7 +310,7 @@ def getInspiredArtworks():
                 queries += 'major_periods=' + timePeriod
                 queriesCount += 1
 
-            URL = "http://localhost:3000/WalidArtworksApi?"+queries
+            URL = "https://artworks-web-scraping-production.up.railway.app/WalidArtworksApi?"+queries
             print(URL)
             headers = {
                 'Content-Type': 'application/json',
@@ -475,7 +475,7 @@ def getAllArtworks():
             for artistNationality in artistsNationalities:
                 print("at: "+artistNationality)
                 # getting feature vectors of the retrieved artworks images
-                URL = "http://localhost:3000/WalidArtworksApi?artistNationality=" + artistNationality
+                URL = "https://artworks-web-scraping-production.up.railway.app/WalidArtworksApi?artistNationality=" + artistNationality
                 headers = {
                     'Content-Type': 'application/json',
                     'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.75 Safari/537.36',
