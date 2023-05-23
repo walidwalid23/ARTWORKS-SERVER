@@ -161,7 +161,7 @@ def getStolenArtworks():
                     artworkImageUrl = decodedArtworkObj["artworkImageUrl"]
                     lastArtwork = decodedArtworkObj["lastArtwork"]
                 # request the image with headers
-                    time.sleep(0.3)
+                    time.sleep(0.5)
                     session2 = requests.Session()
                     resp = session2.get(artworkImageUrl,
                                         headers={
@@ -336,7 +336,7 @@ def getInspiredArtworks():
                     artworkImageUrl = decodedArtworkObj["artworkImageUrl"]
                     lastArtwork = decodedArtworkObj["lastArtwork"]
                 # request the image with headers
-                    time.sleep(0.3)
+                    time.sleep(0.5)
                     session2 = requests.Session()
                     resp = session2.get(artworkImageUrl,
                                         headers={
@@ -499,6 +499,7 @@ def getAllArtworks():
                         artworkImageUrl = decodedArtworkObj["artworkImageUrl"]
                         lastArtwork = decodedArtworkObj["lastArtwork"]
                         # extract features from each retrieved artwork image
+                        time.sleep(0.5)
                         retrievedImage = Image.open(
                             urlopen(artworkImageUrl)).convert('RGB')
 
